@@ -6,6 +6,8 @@ name = "pypi"
 [packages]
 numpy = "*"
 opencv-python = "*"
+requests = "*"
+gdown = "*"
 
 [dev-packages]
 
