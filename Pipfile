@@ -8,8 +8,11 @@ numpy = "*"
 opencv-python = "*"
 requests = "*"
 gdown = "*"
+pillow = "*"
+piexif = "*"
 
 [dev-packages]
+ipykernel = "*"
 
 [requires]
 python_version = "3.7"
