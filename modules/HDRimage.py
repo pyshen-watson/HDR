@@ -12,9 +12,10 @@ import cv2
 import numpy as np
 
 from tqdm import tqdm
-from modules.env import ALBUM_NAMES, ALBUM_TYPES, ALIGN_IGNORANCE
-from modules.Alignment import align
+from modules.env import ALBUM_NAMES, ALBUM_TYPES, ALIGN_IGNORANCE, SAMPLE_HEIGHT, SAMPLE_WIDTH
 from modules.utils import download, getExif
+from modules.alignment import align
+from modules.responseCurve import gsolve
 
 class HDRImageAlbum:
 
@@ -60,6 +61,28 @@ class HDRImageAlbum:
             for img in self.images:
                 img.load_ALN(exist=True)  
 
+    def sampling(self):
+        for img in self.images:
+            img.sampling()
+
+
+        N_channel = 3
+        N_sample = SAMPLE_HEIGHT * SAMPLE_WIDTH
+        N_image = len(self.images)
+
+        self.Z_value = np.zeros((N_channel, N_sample, N_image))
+
+        for i in range(3):
+            self.Z_value[i] =  np.array([img.Z_value[:,i] for img in self.images]).reshape(N_sample, N_image)
+
+    def get_G_function(self):
+
+        dt = np.array([img.shutter for img in self.images])
+        for i in range(3):
+            g, ln_E = gsolve(self.Z_value[i], dt) 
+        
+
+
 """
 HDRImage: 
             A single image
@@ -70,8 +93,6 @@ Attribute:
             MTB: The median Threshold Bitmap of the image
             ALN: The shifted image after alignment
 """
-
-
 
 class HDRImage:
 
@@ -103,3 +124,6 @@ class HDRImage:
             self.ALN = cv2.warpAffine(self.img.astype(np.float32), M, (self.img.shape[1], self.img.shape[0]))
             cv2.imwrite(self.path[2], self.ALN)
 
+    def sampling(self):
+        downScale = cv2.resize(self.img, (SAMPLE_HEIGHT, SAMPLE_WIDTH), interpolation=cv2.INTER_AREA)
+        self.Z_value = np.reshape(downScale, (SAMPLE_HEIGHT*SAMPLE_WIDTH, 3))

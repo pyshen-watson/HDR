@@ -26,9 +26,9 @@ def align(MTB_std, MTB_img, MTB_mask):
         width >>= level
 
         # Resize the image to 2^level times small 
-        std = cv2.resize(MTB_std, (height, width), cv2.INTER_AREA)        
-        img = cv2.resize(MTB_img, (height, width), cv2.INTER_AREA)
-        mask = cv2.resize(MTB_mask, (height, width), cv2.INTER_AREA)
+        std = cv2.resize(MTB_std, (height, width), interpolation=cv2.INTER_AREA)        
+        img = cv2.resize(MTB_img, (height, width), interpolation=cv2.INTER_AREA)
+        mask = cv2.resize(MTB_mask, (height, width), interpolation=cv2.INTER_AREA)
 
         # The translate(...) is the twice shift of the previous plus current
         diffs = [diff( translate(img, x_shift*2+x, y_shift*2+y), std, mask) for x,y in DIRECTIONS]
