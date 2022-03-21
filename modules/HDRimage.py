@@ -13,6 +13,7 @@ import numpy as np
 
 from tqdm import tqdm
 from modules.env import ALBUM_NAMES, ALBUM_TYPES, ALIGN_IGNORANCE, SAMPLE_HEIGHT, SAMPLE_WIDTH
+from modules.plot import draw_g
 from modules.utils import download, getExif
 from modules.alignment import align
 from modules.responseCurve import gsolve
@@ -62,25 +63,27 @@ class HDRImageAlbum:
                 img.load_ALN(exist=True)  
 
     def sampling(self):
+
         for img in self.images:
             img.sampling()
-
 
         N_channel = 3
         N_sample = SAMPLE_HEIGHT * SAMPLE_WIDTH
         N_image = len(self.images)
 
-        self.Z_value = np.zeros((N_channel, N_sample, N_image))
+        self.Z_value = np.zeros((N_channel, N_image, N_sample))
+
 
         for i in range(3):
-            self.Z_value[i] =  np.array([img.Z_value[:,i] for img in self.images]).reshape(N_sample, N_image)
+            self.Z_value[i] = np.array([img.Z_value[:,i] for img in self.images])
 
     def get_G_function(self):
 
         dt = np.array([img.shutter for img in self.images])
         for i in range(3):
             g, ln_E = gsolve(self.Z_value[i], dt) 
-        
+            draw_g(g, title=f"Channel {i}")
+            break
 
 
 """
