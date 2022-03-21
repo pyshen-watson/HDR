@@ -1,37 +1,27 @@
-import os
-import gdown
+import os, gdown
+from modules.env import ALBUM_LINKS, ALBUM_NAMES, ALBUM_TYPES
 from zipfile import ZipFile
-
-album_keys = [
-    '1DFY8Ke-s4suFuTuzVx18Bfe5OCYKYWCl',
-    '1qF5SuA3dAIYESbMQ1TxUayZZtCXd_-WZ'
-    ]
-
-album_names = [
-    'Test_file',
-    'NTU_MainLibrary'
-    ]
 
 def download(album_id):
 
-    URL = f'https://drive.google.com/uc?id={album_keys[album_id]}'
-    ALBUM_PATH = f'./Images/{album_names[album_id]}'
+    url = f'https://drive.google.com/uc?id={ALBUM_LINKS[album_id]}'
+    album_path = f'./Images/{ALBUM_NAMES[album_id]}'
 
-    os.makedirs(ALBUM_PATH, exist_ok=True)
-    os.makedirs(f'{ALBUM_PATH}/original', exist_ok=True)
-    os.makedirs(f'{ALBUM_PATH}/MTB', exist_ok=True)
+    os.makedirs(album_path, exist_ok=True)
+    for type in ALBUM_TYPES:
+        os.makedirs(f'{album_path}/{type}', exist_ok=True)
 
 
     # Download the zipfile from google drive to ZIP_PATH and unzip at original directory.
-    ZIP_PATH = f'{ALBUM_PATH}/images.zip'
-    DOWNLOAD_FILENAME = gdown.download(url=URL, output=ZIP_PATH, quiet=False)
-    print(f'Download of {DOWNLOAD_FILENAME} finished.')
+    zip_path = f'{album_path}/images.zip'
+    gdown.download(url=url, output=zip_path, quiet=False)
+    print(f'Download of {zip_path} finished.')
 
-    with ZipFile(ZIP_PATH, 'r') as zip_ref:
-        zip_ref.extractall(f'{ALBUM_PATH}/original')
+    with ZipFile(zip_path, 'r') as zip_ref:
+        zip_ref.extractall(f'{album_path}/{ALBUM_TYPES[0]}')
 
-    print(f'Unzip at {ALBUM_PATH}')
-    os.remove(ZIP_PATH)
+    print(f'Unzip at {album_path}/{ALBUM_TYPES[0]}')
+    os.remove(zip_path)
 
 def selection(statement, N_options, default_value):
     ret = input(statement)

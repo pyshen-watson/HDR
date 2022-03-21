@@ -1,21 +1,23 @@
 import os
-from modules.utils import selection, download, album_names
-from modules.VFXimage import VFXImageSet
+from modules.utils import selection, download
+from modules.env import ALBUM_NAMES, ALBUM_TYPES
+from modules.HDRimage import HDRImageAlbum
 
 
 if __name__ == '__main__':
 
+
+    options = " ".join([f'[{i}] {name}' for i, name in enumerate(ALBUM_NAMES)])
     album_id = selection(
-                statement='Select the album: [0]Test [1]NTULibrary (default 0): ',
+                statement=f'Select the album: {options} (default 0): ',
                 N_options=2,
                 default_value=0)
 
 
-    album_path = f'./Images/{album_names[album_id]}/original'
+    album_path = f'./Images/{ALBUM_NAMES[album_id]}/{ALBUM_TYPES[0]}'
     if not os.path.isdir(album_path):
         download(album_id)
 
 
-    images = VFXImageSet(album_path)
+    images = HDRImageAlbum(album_path)
     images.align()
-
