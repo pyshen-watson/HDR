@@ -11,8 +11,9 @@ ALBUM_NAMES = [
 ALBUM_TYPES = [
     '0_ORI',
     '1_MTB',
+    '2_ALN',
 ]
 
 
 ALIGN_IGNORANCE = 10
-ALIGN_LEVEL = 9
+ALIGN_LEVEL = 6

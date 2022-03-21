@@ -10,7 +10,7 @@ requests = "*"
 gdown = "*"
 pillow = "*"
 piexif = "*"
-rawpy = "*"
+tqdm = "*"
 
 [dev-packages]
 ipykernel = "*"

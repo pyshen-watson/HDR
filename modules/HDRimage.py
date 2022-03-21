@@ -2,101 +2,104 @@
 HDRImageAlbum: 
             A Set of HDRImage
 Attribute:
-            ORI_path: The path to the original photo directory
-            MTB_path: The path to the MTB directory
-            name: The name of the album
-            images: A list of HDRImage
+            id: The album ID
+            root: The path to the album
+            path: The paths to different types
 """
 import os
+from re import S
 import cv2
 import numpy as np
 
-from modules.env import ALBUM_TYPES
-
+from tqdm import tqdm
+from modules.env import ALBUM_NAMES, ALBUM_TYPES, ALIGN_IGNORANCE
+from modules.Alignment import align
+from modules.utils import download, getExif
 
 class HDRImageAlbum:
 
-    def __init__(self, album_path):
+    def __init__(self, album_id):
+        self.id = album_id
+        self.root = f'./Images/{ALBUM_NAMES[album_id]}'
+        self.path = [ f'{self.root}/{album_type}' for album_type in ALBUM_TYPES]
 
-        self.ORI_path = album_path
-        self.MTB_path = self.ORI_path.replace(ALBUM_TYPES[0], ALBUM_TYPES[1])
-        self.name = self.ORI_path.split('/')[2]
+    def load_image(self):
 
-        filenames = os.listdir(self.ORI_path)
+        if not os.path.isdir(self.path[0]):
+            download(self.id)
+            print(f'Download and unzip photos at {self.path[0]}.')
+
+        filenames = os.listdir(self.path[0])
         filenames.sort()
-        jpg_path = [f'{self.ORI_path}/{filename}' for filename in filenames if 'JPG' in filename]
-        self.images = [HDRImage(jpg) for jpg in jpg_path] 
+        jpg_path = [f'{self.path[0]}/{filename}' for filename in filenames if 'JPG' in filename]
+        self.images = [HDRImage(jpg) for jpg in jpg_path]
 
-    def align(self):
-        # std = self.images[-1] 
-        # mask = cv2.inRange(cv2.cvtColor(std.JPG, cv2.COLOR_BGR2GRAY), std.median-10, std.median+10)
-        pass
-        
-    def __str__(self):
+    def load_MTB(self):
 
-        for image in self.images:
-            print(image)
-        return self.name
-        
-        
+        print(f'Loading MTB at {self.path[1]}...')
+
+        if not os.path.isdir(self.path[1]):
+            os.makedirs(self.path[1])
+            for img in tqdm(self.images):
+                img.load_MTB(exist=False)
+        else:
+            for img in self.images:
+                img.load_MTB(exist=True)
+
+    def load_ALN(self): 
+
+        print(f'Loading ALN at {self.path[2]}...')
+        if not os.path.isdir(self.path[2]):
+            os.makedirs(self.path[2])
+            std = self.images[-1]
+            img_gray, median = std.get_gray_and_median()
+            mask = cv2.inRange(img_gray, median-ALIGN_IGNORANCE, median+ALIGN_IGNORANCE)
+            for img in tqdm(self.images):
+                img.load_ALN(exist=False, std=std.MTB, mask=mask)
+        else:
+            for img in self.images:
+                img.load_ALN(exist=True)  
+
 """
 HDRImage: 
             A single image
 Attribute:
-            name: Name of the photo
-            path: Path to the orginal version of photo
-            img: Image open by PIL
-            JPG: img convert to NumPy array
-            MTB: The Median Threshold Bitmap
-            shutter: The exposure time of image
+            path: The paths to different type of images
+            img: The image in numpy 2d-array
+            shutter: The exposure time of the image
+            MTB: The median Threshold Bitmap of the image
+            ALN: The shifted image after alignment
 """
 
-import piexif
-import rawpy
-from PIL import Image
+
 
 class HDRImage:
 
     def __init__(self, jpg_path):
-        self.name = jpg_path.split('/')[-1][:-4]
-        self.path = jpg_path
-        self.img = Image.open(jpg_path)
-        self.JPG = cv2.cvtColor(np.asarray(self.img), cv2.COLOR_RGB2BGR)
-        self.MTB = self.load_MTB()
+        self.path = [jpg_path.replace(ALBUM_TYPES[0], album_type) for album_type in ALBUM_TYPES]
+        self.img = cv2.imread(self.path[0])
+        self.shutter = getExif(self.path[0])[0]
 
-        exif = piexif.load(self.img.info["exif"])["Exif"]
-        self.shutter = exif[33434][0] / exif[33434][1]
-        # self.ISO = exif[34855]
-        # self.aperture = exif[37378][0] / exif[37378][1]
-        
-    def load_raw(self):
-        raw_path = self.path.replace('JPG', 'CR2')
-        self.RAW = rawpy.imread(raw_path)
-        # self.RAW = self.RAW.postprocess()
-        # self.RAW = cv2.cvtColor(self.RAW, cv2.COLOR_RGB2BGR)
-        return self.RAW
-
-    def load_MTB(self):
-        
-        MTB_PATH = self.path.replace(ALBUM_TYPES[0], ALBUM_TYPES[1])
-
-        if os.path.isfile(MTB_PATH):
-            return cv2.imread(MTB_PATH, cv2.IMREAD_GRAYSCALE)
+    def load_MTB(self, exist):
+        if exist:
+            self.MTB = cv2.imread(self.path[1], cv2.IMREAD_GRAYSCALE)
         else:
-            img_gray = cv2.cvtColor(self.JPG, cv2.COLOR_BGR2GRAY)
-            self.median = np.median(img_gray.flatten())
-            _, img_MTB = cv2.threshold(img_gray, self.median, 255, cv2.THRESH_BINARY)
-            cv2.imwrite(MTB_PATH, img_MTB)
-            return img_MTB
+            img_gray, median = self.get_gray_and_median()
+            _, img_MTB = cv2.threshold(img_gray, median, 255, cv2.THRESH_BINARY)
+            self.MTB = img_MTB
+            cv2.imwrite(self.path[1], self.MTB)
 
-    def get_median(self):
-        img_gray = cv2.cvtColor(self.JPG, cv2.COLOR_BGR2GRAY)
-        self.median = np.median(img_gray.flatten())
-        return self.median
+    def get_gray_and_median(self):
+        img_gray = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
+        median = np.median(img_gray.flatten())
+        return img_gray, median
 
-    def __str__(self):
-        output = f'{"=" * 20} {self.name} {"=" * 20}\n'
-        output += f'Shutter: {self.shutter}\n'
-        # output += f'ISO: {self.ISO}\n'
-        # output += f'Aperture: {self.aperture}\n'
-        return output
+    def load_ALN(self, exist, std=None, mask=None):
+        if exist:
+            self.ALN = cv2.imread(self.path[2])
+        else:
+            x_shift, y_shift = align(std, self.MTB, mask)
+            M = np.array([[1, 0, x_shift],[0, 1, y_shift]], np.float32)
+            self.ALN = cv2.warpAffine(self.img.astype(np.float32), M, (self.img.shape[1], self.img.shape[0]))
+            cv2.imwrite(self.path[2], self.ALN)
+
