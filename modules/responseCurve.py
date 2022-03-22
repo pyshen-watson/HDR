@@ -36,12 +36,4 @@ def gsolve(Z, dt):
     x = la.lstsq(A, b, rcond=None)[0]
     g = x[:256]
 
-    ln_E = np.zeros((N_SAMPLE))
-    for i in range(N_SAMPLE):
-
-        weight = np.array([w(int_Z(i, j)) for j in range(N_IMAGES)])
-        g_ln_dt_diff = np.array([g[int_Z(i, j)] - ln_dt[j] for j in range(N_IMAGES)])
-        ln_E[i] = np.sum(weight * g_ln_dt_diff) / np.sum(weight)
-
-
-    return g, ln_E
+    return g

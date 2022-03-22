@@ -7,7 +7,6 @@ Attribute:
             path: The paths to different types
 """
 import os
-from re import S
 import cv2
 import numpy as np
 
@@ -79,11 +78,13 @@ class HDRImageAlbum:
 
     def get_G_function(self):
 
+        self.g = []
         dt = np.array([img.shutter for img in self.images])
         for i in range(3):
-            g, ln_E = gsolve(self.Z_value[i], dt) 
-            draw_g(g, title=f"Channel {i}")
-            break
+            g = gsolve(self.Z_value[i], dt)
+            self.g.append(g)
+
+        draw_g(ALBUM_NAMES[self.id], self.g)
 
 
 """
