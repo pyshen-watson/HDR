@@ -21,6 +21,7 @@ ALBUM_NAMES = [
 ALBUM_TYPES = [
     '0_ORI',
     '1_ALN',
+    '2_RCG'
 ]
 
 

@@ -6,6 +6,7 @@ Attribute:
             root: The path to the album
             path: The paths to different types
 """
+
 import os
 import cv2
 import numpy as np
@@ -13,7 +14,7 @@ import numpy as np
 from tqdm import tqdm
 from modules.env import ALBUM_NAMES, ALBUM_TYPES, ALIGN_IGNORANCE, SAMPLE_HEIGHT, SAMPLE_WIDTH
 from modules.utils import download, getExif, translate
-from modules.plot import draw_g
+from modules.plot import draw_g, draw_radiance
 from modules.alignment import align
 from modules.responseCurveSolver import debevec_solution
 
@@ -50,7 +51,11 @@ class HDRImageAlbum:
 
             print(f'The alignment is done.')
 
-    def sampling(self):
+    def solve(self):
+
+        if os.path.isdir(self.path[2]):
+            self.resCurve = np.load(f'{self.path[2]}/model.npy')
+            return
 
         for img in self.images:
             img.sampling()
@@ -62,11 +67,61 @@ class HDRImageAlbum:
 
         for channel in range(3):
             self.Z[channel] = np.array([img.Z[:,channel] for img in self.images])
-
-    def solve(self):
+        
         dt = np.array([img.shutter for img in self.images])
-        self.g = [debevec_solution(self.Z[c], dt) for c in range(3)]
-        draw_g(ALBUM_NAMES[self.id], self.g)
+        self.resCurve = np.array([debevec_solution(self.Z[c], dt) for c in range(3)])
+
+        os.makedirs(self.path[2])
+        np.save(f'{self.path[2]}/model', self.resCurve)
+        print(f'Save {self.path[2]}/model.npy')
+
+        draw_g(ALBUM_NAMES[self.id], self.path[2], self.resCurve)
+
+    def get_radiance(self):
+        
+        height, width = self.images[0].img.shape[:2]
+        radiance = np.zeros((height, width))
+
+        Z = np.array([image.img for image in self.images])
+        print(Z.shape)
+
+        # w = np.vectorize(lambda z: z if z<=127 else 255-z)
+        # z_gray = (Z[:,:,:,0]*19 + Z[:,:,:,1]*183 + Z[:,:,:,2]*54) / 256
+        # w_of_z = np.array([w(z) for z in z_gray])
+        # print(w_of_z.shape)
+
+
+
+            # return z_gray if z_gray <= 127 else 255-z_gray
+        # def g_of_Z():
+
+        #     Z_B = Z[0].item()
+        #     Z_G = Z[1].item()
+        #     Z_R = Z[2].item()
+
+        #     X_B = self.resCurve[0][Z_B]
+        #     X_G = self.resCurve[1][Z_G]
+        #     X_R = self.resCurve[2][Z_R]
+        #     return  (54*X_R + 183*X_G + 19*X_B ) / 256
+
+
+
+            
+
+
+        # G =    
+
+
+        # for r in tqdm(range(height)):
+        #     for c in range(width):
+        #         E = np.array([self.g(image.img[r,c]) - np.log(image.shutter) for image in self.images])
+        #         W = np.array([w(z_gray(image.img[r,c])) for image in self.images])
+        #         radiance[r,c] = np.sum(E*W) / np.sum(W)
+
+        # draw_radiance(ALBUM_NAMES[self.id], radiance)                
+
+
+
 
 
 """

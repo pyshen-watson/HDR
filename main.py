@@ -1,6 +1,5 @@
-import os
 from modules.utils import selection
-from modules.env import ALBUM_NAMES, ALBUM_TYPES
+from modules.env import ALBUM_NAMES
 from modules.HDRimage import HDRImageAlbum
 
 
@@ -16,5 +15,5 @@ if __name__ == '__main__':
     album.download_images()
     album.load_images()
     album.align_images()
-    album.sampling()
     album.solve()
+    album.get_radiance()
