@@ -12,6 +12,7 @@ pillow = "*"
 piexif = "*"
 tqdm = "*"
 matplotlib = "*"
+numba = "*"
 
 [dev-packages]
 ipykernel = "*"
