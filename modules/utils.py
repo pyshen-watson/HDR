@@ -1,8 +1,10 @@
 import os
 import gdown
 import piexif
-from zipfile import ZipFile
+import cv2
+import numpy as np
 from PIL import Image
+from zipfile import ZipFile
 from modules.env import ALBUM_LINKS, ALBUM_NAMES, ALBUM_TYPES
 
 def download(album_id):
@@ -47,6 +49,10 @@ def getExif(img_path):
     filmSpeed = exif[34855]                         # ISO Value
     aperture = exif[37378][0] / exif[37378][1]      # Aperture Value
     return [exposureTime, filmSpeed, aperture]
+
+def translate(img, x:int, y:int):
+    M = np.array([[1, 0, x],[0, 1, y]], np.float32)
+    return cv2.warpAffine(img.astype(np.float32), M, (img.shape[1], img.shape[0]))
 
 """
 Reference: 

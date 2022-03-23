@@ -10,8 +10,7 @@ ALBUM_NAMES = [
 
 ALBUM_TYPES = [
     '0_ORI',
-    '1_MTB',
-    '2_ALN',
+    '1_ALN',
 ]
 
 

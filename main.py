@@ -13,8 +13,8 @@ if __name__ == '__main__':
                 default_value=0)
 
     album = HDRImageAlbum(album_id)
-    album.load_image()
-    album.load_MTB()
-    album.load_ALN()
-    album.sampling()
-    album.get_G_function()
+    album.download_images()
+    album.load_images()
+    album.align_images()
+    # album.sampling()
+    # album.get_G_function()
