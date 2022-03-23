@@ -85,10 +85,6 @@ class HDRAlbum:
         
         std = self.images[0].img
 
-        print(self.resCurve)
-
-        start = perf_counter()
-        
         radiance = render_radiance(
             height=std.shape[0], 
             width=std.shape[1], 
@@ -97,10 +93,6 @@ class HDRAlbum:
             curve=self.resCurve,
             ln_dt=np.log([img.shutter for img in self.images])
         )
-
-        
-        end = perf_counter()
-        print(end-start)
 
         os.makedirs(self.path[3],exist_ok=True)
         draw_radiance(ALBUM_NAMES[self.id], self.path[3], radiance)                

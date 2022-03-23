@@ -4,8 +4,7 @@ from numba import njit
 @njit
 def Z3_to_X(Z3, curve):
 
-    Z = [Z3[i].item() for i in range(3)]
-    X = np.array([curve[i][Z[i]] for i in range(3)])
+    X = np.array([curve[i][int(Z3[i].item())] for i in range(3)])
     X = (X[0] * 19 + X[1] * 183 + X[2] * 54) / 256
     return X
    
