@@ -1,11 +1,21 @@
 ALBUM_LINKS = [
-    '1DFY8Ke-s4suFuTuzVx18Bfe5OCYKYWCl',
-    '1qF5SuA3dAIYESbMQ1TxUayZZtCXd_-WZ',
+    '1WkT_q6tGOwhMkdtvgOGuBM26RAJUns0_',
+    '1otaUpf7respz-yKQdoX-aOfA30VEWzsH',
+    '1h1ZIr_mHOwcy8OxvqjSN1o7DEcA6pIBB',
+    '1oAKJA-4A1k533ftoSiwwhEtT3usQJyTz',
+    '1JdlkjNqah_O7dvhM8Sf0W8NvM2-HDbBi',
+    '1mLuA47620ktrZbVXz4i-6it8XTs5LcMU',
+    '1RkbhiMvpRnebGkqphrqTdV5u9yYI39E0'
 ]
 
 ALBUM_NAMES = [
-    'Test_file',
-    'NTU_MainLibrary',
+    'Test',
+    'Library',
+    'Grass',
+    'Hallway',
+    'Square',
+    'Trail',
+    'Tunnel'
 ]
 
 ALBUM_TYPES = [

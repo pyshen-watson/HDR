@@ -2,7 +2,7 @@ import numpy as np
 import numpy.linalg as la
 from modules.env import LAMBDA
 
-def gsolve(Z, dt):
+def debevec_solution(Z, dt):
 
     n = 255
     ln_dt = np.log(dt)

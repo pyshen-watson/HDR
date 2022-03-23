@@ -15,13 +15,13 @@ from modules.env import ALBUM_NAMES, ALBUM_TYPES, ALIGN_IGNORANCE, SAMPLE_HEIGHT
 from modules.utils import download, getExif, translate
 from modules.plot import draw_g
 from modules.alignment import align
-from modules.responseCurveSolver import gsolve
+from modules.responseCurveSolver import debevec_solution
 
 class HDRImageAlbum:
 
     def __init__(self, album_id):
         self.id = album_id
-        self.root = f'./Images/{ALBUM_NAMES[album_id]}'
+        self.root = f'./Images/{album_id}_{ALBUM_NAMES[album_id]}'
         self.path = [ f'{self.root}/{album_type}' for album_type in ALBUM_TYPES]
     
     def download_images(self):
@@ -50,31 +50,23 @@ class HDRImageAlbum:
 
             print(f'The alignment is done.')
 
+    def sampling(self):
 
-    # def sampling(self):
+        for img in self.images:
+            img.sampling()
 
-    #     for img in self.images:
-    #         img.sampling()
+        N_channel = 3
+        N_sample = SAMPLE_HEIGHT * SAMPLE_WIDTH
+        N_image = len(self.images)
+        self.Z = np.zeros((N_channel, N_image, N_sample))
 
-    #     N_channel = 3
-    #     N_sample = SAMPLE_HEIGHT * SAMPLE_WIDTH
-    #     N_image = len(self.images)
+        for channel in range(3):
+            self.Z[channel] = np.array([img.Z[:,channel] for img in self.images])
 
-    #     self.Z_value = np.zeros((N_channel, N_image, N_sample))
-
-
-    #     for i in range(3):
-    #         self.Z_value[i] = np.array([img.Z_value[:,i] for img in self.images])
-
-    # def get_G_function(self):
-
-    #     self.g = []
-    #     dt = np.array([img.shutter for img in self.images])
-    #     for i in range(3):
-    #         g = gsolve(self.Z_value[i], dt)
-    #         self.g.append(g)
-
-    #     draw_g(ALBUM_NAMES[self.id], self.g)
+    def solve(self):
+        dt = np.array([img.shutter for img in self.images])
+        self.g = [debevec_solution(self.Z[c], dt) for c in range(3)]
+        draw_g(ALBUM_NAMES[self.id], self.g)
 
 
 """
@@ -82,10 +74,15 @@ HDRImage:
             A single image
 Attribute:
             path: The paths to different type of images
-            img: The image in numpy 2d-array
             shutter: The exposure time of the image
-            MTB: The median Threshold Bitmap of the image
-            ALN: The shifted image after alignment
+            isAligned: To check if the image is aligned
+            img: The image in numpy 2d-array
+Method:
+            get_gray_and_median: Get the grayscale version of img and its median
+            get_MTB: Get the median Threshold Bitmap of the image
+            get_mask: Get the  mask use in alignment
+            align_to: Align img to std_MTB with the mask and rewrite img
+            sampling: Here we use downscale to get sample in grid shape
 """
 
 class HDRImage:
@@ -116,7 +113,6 @@ class HDRImage:
         self.img = translate(self.img, x_shift, y_shift)
         cv2.imwrite(self.path[1], self.img)
 
-
-    # def sampling(self):
-    #     downScale = cv2.resize(self.img, (SAMPLE_HEIGHT, SAMPLE_WIDTH), interpolation=cv2.INTER_AREA)
-    #     self.Z_value = np.reshape(downScale, (SAMPLE_HEIGHT*SAMPLE_WIDTH, 3))
+    def sampling(self):
+        downScale = cv2.resize(self.img, (SAMPLE_HEIGHT, SAMPLE_WIDTH), interpolation=cv2.INTER_AREA)
+        self.Z = np.reshape(downScale, (SAMPLE_HEIGHT*SAMPLE_WIDTH, 3))

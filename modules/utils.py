@@ -10,7 +10,7 @@ from modules.env import ALBUM_LINKS, ALBUM_NAMES, ALBUM_TYPES
 def download(album_id):
 
     url = f'https://drive.google.com/uc?id={ALBUM_LINKS[album_id]}'
-    album_path = f'./Images/{ALBUM_NAMES[album_id]}'
+    album_path = f'./Images/{album_id}_{ALBUM_NAMES[album_id]}'
 
     os.makedirs(album_path)
     os.makedirs(f'{album_path}/{ALBUM_TYPES[0]}')
