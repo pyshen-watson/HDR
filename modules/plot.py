@@ -17,16 +17,18 @@ def draw_g(album_name, fig_path, g):
     fig.savefig(figname)
     print(f'Save {figname}.')
 
-def draw_radiance(album_name, fig_path,E):
+def draw_radiance(album_name, fig_path, radiances):
 
-    fig = plt.figure()
+    color_name = 'BGR'
 
-    plt.imshow(E, cmap='jet')
-    plt.axis('off')
+    for i in range(3):
 
+        fig = plt.figure()
 
-    title = f'[{album_name} Radiance]'
-    plt.title(title)
+        plt.imshow(radiances[i], cmap='jet')
+        plt.axis('off')
+        plt.title(f'[{album_name}_{color_name[i]} Radiance]')
 
-    figname =  f'{fig_path}/radiance-{album_name}.png'
-    fig.savefig(figname)
+        fig_name =  f'{fig_path}/radiance-{color_name[i]}-{album_name}.png'
+        print(f'Save {fig_name}')
+        fig.savefig(fig_name)

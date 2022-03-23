@@ -6,7 +6,7 @@ from tqdm import tqdm
 from numba import njit
 from time import perf_counter
 from modules.HDRImage import HDRImage
-from modules.convertor import render_radiance
+from modules.renderer import render_radiance
 from modules.env import ALBUM_NAMES, ALBUM_TYPES, SAMPLE_HEIGHT, SAMPLE_WIDTH
 from modules.utils import download
 from modules.plot import draw_g, draw_radiance
@@ -54,7 +54,7 @@ class HDRAlbum:
 
             print(f'The alignment is done.')
 
-    def solve(self):
+    def solve_response_curve(self):
 
         if os.path.isdir(self.path[2]):
             self.resCurve = np.load(f'{self.path[2]}/model.npy')
@@ -75,17 +75,20 @@ class HDRAlbum:
         self.resCurve = np.array([debevec_solution(self.Z[c], dt) for c in range(3)], dtype=np.float64)
 
         os.makedirs(self.path[2])
-        print(f'Save {self.path[2]}/model.npy')
-
         np.save(f'{self.path[2]}/model', self.resCurve)
-
+        print(f'Save {self.path[2]}/model.npy')
         draw_g(ALBUM_NAMES[self.id], self.path[2], self.resCurve)
 
-    def get_radiance(self):
+    def get_radiances(self):
         
+        if os.path.isdir(self.path[3]):
+            self.radiances = np.load(f'{self.path[3]}/model.npy')
+            return
+
+
         std = self.images[0].img
 
-        radiance = render_radiance(
+        self.radiances = render_radiance(
             height=std.shape[0], 
             width=std.shape[1], 
             N_image=len(self.images),
@@ -94,8 +97,10 @@ class HDRAlbum:
             ln_dt=np.log([img.shutter for img in self.images])
         )
 
-        os.makedirs(self.path[3],exist_ok=True)
-        draw_radiance(ALBUM_NAMES[self.id], self.path[3], radiance)                
+        os.makedirs(self.path[3])
+        np.save(f'{self.path[3]}/model', self.radiances)
+        print(f'Save {self.path[3]}/model.npy')
+        draw_radiance(ALBUM_NAMES[self.id], self.path[3], self.radiances)                
 
 
 

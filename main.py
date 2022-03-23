@@ -15,5 +15,5 @@ if __name__ == '__main__':
     album.download_images()
     album.load_images()
     album.align_images()
-    album.solve()
-    album.get_radiance()
+    album.solve_response_curve()
+    album.get_radiances()
