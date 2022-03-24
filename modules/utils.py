@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 from PIL import Image
 from zipfile import ZipFile
+from numba import njit
 from modules.env import ALBUM_LINKS, ALBUM_NAMES, ALBUM_TYPES
 
 def download(album_id):
@@ -53,6 +54,17 @@ def getExif(img_path):
 def translate(img, x:int, y:int):
     M = np.array([[1, 0, x],[0, 1, y]], np.float32)
     return cv2.warpAffine(img.astype(np.float32), M, (img.shape[1], img.shape[0]))
+
+@njit
+def reorder(ln_E):
+    (channel, height, width) = ln_E.shape
+    E = np.zeros((height, width, channel), dtype=np.float32)
+    
+    for c in range(channel):
+        for h in range(height):
+            for w in range(width):
+                E[h,w,c] = np.exp(ln_E[c,h,w])
+    return E
 
 """
 Reference: 
