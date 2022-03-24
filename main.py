@@ -17,4 +17,4 @@ if __name__ == '__main__':
     album.align_images()
     album.solve_response_curve()
     album.get_radiances()
-    album.get_tone_mapped()
+    album.get_tonemapping()
