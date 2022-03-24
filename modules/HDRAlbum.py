@@ -45,10 +45,10 @@ class HDRAlbum:
             print(f'Align the images at {self.path[1]}:')
             os.makedirs(self.path[1])
 
-            std = self.images[0]
-            cv2.imwrite(std.path[1] ,std.img)
+            std = self.images[len(self.images)//2]
+            # cv2.imwrite(std.path[1] ,std.img)
 
-            for img in tqdm(self.images[1:]):
+            for img in tqdm(self.images):
                 img.align_to(std.get_MTB(), std.get_mask())
 
             print(f'The alignment is done.')
@@ -56,6 +56,7 @@ class HDRAlbum:
     def solve_response_curve(self):
 
         if os.path.isdir(self.path[2]):
+            print(f'Loading the response curve...')
             self.resCurve = np.load(f'{self.path[2]}/model.npy')
             return
 
@@ -79,8 +80,9 @@ class HDRAlbum:
         draw_g(ALBUM_NAMES[self.id], self.path[2], self.resCurve)
 
     def get_radiances(self):
-        
+
         if os.path.isdir(self.path[3]):
+            print(f'Loading the HDR image...')
             self.hdr = cv2.imread(f'{self.path[3]}/{ALBUM_NAMES[self.id]}.hdr', flags=cv2.IMREAD_ANYDEPTH)
             return
 
@@ -94,7 +96,6 @@ class HDRAlbum:
             curve=self.resCurve,
             ln_dt=np.log([img.shutter for img in self.images])
         )
-
         os.makedirs(self.path[3])
         draw_radiance(ALBUM_NAMES[self.id], self.path[3], ln_radiances)                
       
@@ -106,23 +107,14 @@ class HDRAlbum:
 
         os.makedirs(self.path[4], exist_ok=True)
 
-        tonemapDrago = cv2.createTonemapDrago(DRAGO_GAMMA, DRAGO_SATURATION)
-        ldrDrago = tonemapDrago.process(self.hdr) * 3
-        filename = f"{self.path[4]}/Drago-{DRAGO_GAMMA}-{DRAGO_SATURATION}.jpg"
-        cv2.imwrite(filename, ldrDrago * 255)
-        print(f"Save {filename}")
+        Drago = cv2.createTonemapDrago(DRAGO_GAMMA, DRAGO_SATURATION)
+        Reinhard = cv2.createTonemapReinhard(REINHARD_GAMMA, REINHARD_INTENSITY, REINHARD_LIGHT_ADAPT, REINHARD_COLOR_ADAPT)
+        Mantiuk = cv2.createTonemapMantiuk(MANTIUK_GAMMA, MANTIUK_SCALE, MANTIUK_SATURATION)
+        TM_func = [Drago, Reinhard, Mantiuk]
+        TM_name = ['Drago', 'Reinhard', 'Mantiuk']
 
-
-        tonemapReinhard = cv2.createTonemapReinhard(REINHARD_GAMMA, REINHARD_INTENSITY, REINHARD_LIGHT_ADAPT, REINHARD_COLOR_ADAPT)
-        ldrReinhard = tonemapReinhard.process(self.hdr)
-        filename = f"{self.path[4]}/Reinhard-{REINHARD_GAMMA}-{REINHARD_INTENSITY}-{REINHARD_LIGHT_ADAPT}-{REINHARD_COLOR_ADAPT}.jpg"
-        cv2.imwrite(filename, ldrReinhard * 255)
-        print(f"Save {filename}")
-
-        tonemapMantiuk = cv2.createTonemapMantiuk(MANTIUK_GAMMA, MANTIUK_SCALE, MANTIUK_SATURATION)
-        ldrMantiuk = tonemapMantiuk.process(self.hdr) * 3
-        filename = f"{self.path[4]}/MANTIUK-{MANTIUK_GAMMA}-{MANTIUK_SCALE}-{MANTIUK_SATURATION}.jpg"
-        cv2.imwrite(filename, ldrMantiuk * 255)
-        print(f"Save {filename}")
-
-
+        for func, name in zip(TM_func, TM_name):
+            ldr = func.process(self.hdr) * 3
+            filename = f"{self.path[4]}/{name}.jpg"
+            cv2.imwrite(filename, ldr * 255)
+            print(f"Save {filename}")

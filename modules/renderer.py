@@ -4,14 +4,14 @@ from numba import njit
 @njit
 def render_radiance(height, width, N_image, Z3, curve, ln_dt):
 
-    radiances = np.zeros((3, height, width), dtype=np.float64)
+    radiances = np.zeros((3, height, width), dtype=np.float32)
 
     w = lambda z: z if z<=127 else 255-z
     g = lambda z, channel: curve[channel][int(z.item())]
 
     for channel in range(3):
 
-        radiance = np.zeros((height, width), dtype=np.float64)
+        radiance = np.zeros((height, width), dtype=np.float32)
 
         for r in range(height):
             for c in range(width):
