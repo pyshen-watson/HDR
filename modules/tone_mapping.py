@@ -61,6 +61,6 @@ def tone_mapping(height, width, img, radiances):
     #print(f'M={M}')
     for r in range(height):
         for c in range(width):
-            img[r, c] = [M[r, c]*img[r, c, 0], M[r, c]*img[r, c, 1], M[r, c]*img[r, c, 2]]
+            img[r, c] = [M[r, c]*radiances[0, r, c], M[r, c]*radiances[1, r, c], M[r, c]*radiances[2, r, c]]*255
     #print(f'tone_mapped={img}')
     return img
