@@ -113,7 +113,6 @@ class HDRAlbum:
         cv2.imwrite(filename, ldrDrago * 255)
         print(f"Save {filename}")
 
-
         tonemapReinhard = cv2.createTonemapReinhard(REINHARD_GAMMA, REINHARD_INTENSITY, REINHARD_LIGHT_ADAPT, REINHARD_COLOR_ADAPT)
         ldrReinhard = tonemapReinhard.process(self.hdr)
         filename = f"{self.path[4]}/Reinhard-{REINHARD_GAMMA}-{REINHARD_INTENSITY}-{REINHARD_LIGHT_ADAPT}-{REINHARD_COLOR_ADAPT}.jpg"
@@ -126,13 +125,12 @@ class HDRAlbum:
         cv2.imwrite(filename, ldrMantiuk * 255)
         print(f"Save {filename}")
 
-        std = self.images[len(self.images)//2].img
+        # std = self.images[len(self.images)//2].img
 
         tone_mapped = tone_mapping(
-            height=std.shape[0],
-            width=std.shape[1],
-            img=std,
-            radiances=self.hdr
+            height=self.hdr.shape[0],
+            width=self.hdr.shape[1],
+            img=self.hdr
         )
         # newimg = self.images[1].img
         # for r in range(std.shape[0]):
@@ -140,5 +138,5 @@ class HDRAlbum:
         #         newimg[r, c, 0] = newimg[r, c, 0]*tone_mapped[r, c]
         #         newimg[r, c, 1] = newimg[r, c, 1]*tone_mapped[r, c]
         #         newimg[r, c, 2] = newimg[r, c, 2]*tone_mapped[r, c]
-        cv2.imwrite(f'{self.path[3]}/tone_mapped.jpg', tone_mapped)
-        print(f'Save {self.path[3]}/tone_napped.jpg')
+        cv2.imwrite(f'{self.path[4]}/tone_mapped.jpg', tone_mapped)
+        print(f'Save {self.path[4]}/tone_mapped.jpg')
