@@ -11,6 +11,7 @@ from modules.env import ALBUM_NAMES, ALBUM_TYPES, SAMPLE_HEIGHT, SAMPLE_WIDTH
 from modules.utils import download
 from modules.plot import draw_g, draw_radiance
 from modules.responseCurveSolver import debevec_solution
+from modules.tone_mapping import tone_mapping
 
 """
 HDRImageAlbum: 
@@ -100,7 +101,23 @@ class HDRAlbum:
         os.makedirs(self.path[3])
         np.save(f'{self.path[3]}/model', self.radiances)
         print(f'Save {self.path[3]}/model.npy')
-        draw_radiance(ALBUM_NAMES[self.id], self.path[3], self.radiances)                
+        draw_radiance(ALBUM_NAMES[self.id], self.path[3], self.radiances)
 
+    def get_tone_mapped(self):
 
+        std = self.images[0].img
 
+        tone_mapped = tone_mapping(
+            height=std.shape[0],
+            width=std.shape[1],
+            img=std,
+            radiances=self.radiances
+        )
+        # newimg = self.images[1].img
+        # for r in range(std.shape[0]):
+        #     for c in range(std.shape[1]):
+        #         newimg[r, c, 0] = newimg[r, c, 0]*tone_mapped[r, c]
+        #         newimg[r, c, 1] = newimg[r, c, 1]*tone_mapped[r, c]
+        #         newimg[r, c, 2] = newimg[r, c, 2]*tone_mapped[r, c]
+        cv2.imwrite(f'{self.path[3]}/tone_mapped.jpg', tone_mapped)
+        print(f'Save {self.path[3]}/tone_napped.jpg')
