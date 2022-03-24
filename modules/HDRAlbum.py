@@ -105,7 +105,7 @@ class HDRAlbum:
 
     def get_tone_mapped(self):
 
-        std = self.images[0].img
+        std = self.images[len(self.images)//2].img
 
         tone_mapped = tone_mapping(
             height=std.shape[0],
