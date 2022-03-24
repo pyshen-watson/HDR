@@ -3,13 +3,13 @@ import cv2
 import numpy as np
 
 from tqdm import tqdm
-from time import perf_counter
+from modules.env import *
 from modules.HDRImage import HDRImage
 from modules.renderer import render_radiance
-from modules.env import ALBUM_NAMES, ALBUM_TYPES, DRAGO_GAMMA, DRAGO_SATURATION, MANTIUK_GAMMA, MANTIUK_SATURATION, MANTIUK_SCALE, REINHARD_COLOR_ADAPT, REINHARD_GAMMA, REINHARD_INTENSITY, REINHARD_LIGHT_ADAPT, SAMPLE_HEIGHT, SAMPLE_WIDTH
 from modules.utils import download, reorder
 from modules.plot import draw_g, draw_radiance
 from modules.responseCurveSolver import debevec_solution
+from modules.toneMapping import SelfWriteToneMapping
 
 """
 HDRImageAlbum: 
@@ -110,11 +110,15 @@ class HDRAlbum:
         Drago = cv2.createTonemapDrago(DRAGO_GAMMA, DRAGO_SATURATION)
         Reinhard = cv2.createTonemapReinhard(REINHARD_GAMMA, REINHARD_INTENSITY, REINHARD_LIGHT_ADAPT, REINHARD_COLOR_ADAPT)
         Mantiuk = cv2.createTonemapMantiuk(MANTIUK_GAMMA, MANTIUK_SCALE, MANTIUK_SATURATION)
-        TM_func = [Drago, Reinhard, Mantiuk]
-        TM_name = ['Drago', 'Reinhard', 'Mantiuk']
+        SelfWrite = SelfWriteToneMapping(SELF_ALPHA, SELF_GAMMA)
+
+        TM_func = [Drago, Reinhard, Mantiuk, SelfWrite]
+        TM_name = ['Drago', 'Reinhard', 'Mantiuk', 'Self-write']
 
         for func, name in zip(TM_func, TM_name):
             ldr = func.process(self.hdr) * 3
             filename = f"{self.path[4]}/{name}.jpg"
             cv2.imwrite(filename, ldr * 255)
             print(f"Save {filename}")
+       
+       
