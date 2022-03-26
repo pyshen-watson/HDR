@@ -8,11 +8,10 @@ numpy = "*"
 opencv-python = "*"
 requests = "*"
 gdown = "*"
-pillow = "*"
-piexif = "*"
 tqdm = "*"
 matplotlib = "*"
 numba = "*"
+pillow = "*"
 
 [dev-packages]
 ipykernel = "*"

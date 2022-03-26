@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 
 from modules.env import  ALBUM_TYPES, ALIGN_IGNORANCE, SAMPLE_HEIGHT, SAMPLE_WIDTH
-from modules.utils import getExif, translate
+from modules.utils import translate
 from modules.alignment import align
 
 """
@@ -26,7 +26,7 @@ class HDRImage:
 
     def __init__(self, jpg_path):
         self.path = [jpg_path.replace(ALBUM_TYPES[0], album_type) for album_type in ALBUM_TYPES]
-        self.shutter = getExif(self.path[0])[0]
+        self.shutter = 1 / int(self.path[0].split('.')[2])
         self.isAligned = os.path.isfile(self.path[1])
         self.img = cv2.imread(self.path[1] if self.isAligned else self.path[0])
     

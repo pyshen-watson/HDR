@@ -13,7 +13,7 @@ def draw_g(album_name, fig_path, g):
     title = f'[{album_name}] Lambda={LAMBDA} Sample={SAMPLE_HEIGHT}x{SAMPLE_WIDTH}'
     plt.title(title)
 
-    figname =  f'{fig_path}/g-{album_name}.png'
+    figname =  f'{fig_path}/response-curve.png'
     fig.savefig(figname)
     print(f'Save {figname}.')
 

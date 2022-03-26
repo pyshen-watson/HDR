@@ -1,5 +1,5 @@
 ALBUM_LINKS = [
-    '1WkT_q6tGOwhMkdtvgOGuBM26RAJUns0_',
+    '18n_mXh92saQuPG921cDoAlI1emupFTdf',
     '1otaUpf7respz-yKQdoX-aOfA30VEWzsH',
     '1h1ZIr_mHOwcy8OxvqjSN1o7DEcA6pIBB',
     '1oAKJA-4A1k533ftoSiwwhEtT3usQJyTz',
@@ -9,7 +9,7 @@ ALBUM_LINKS = [
 ]
 
 ALBUM_NAMES = [
-    'Test',
+    'Bear',
     'Library',
     'Grass',
     'Hallway',
@@ -46,5 +46,6 @@ MANTIUK_GAMMA = 2.7
 MANTIUK_SCALE = 0.75
 MANTIUK_SATURATION = 1.2
 
-SELF_ALPHA = 0.18
-SELF_GAMMA = 2.8
+SELF_MU = 0.01
+SELF_ALPHA = 0.7
+SELF_GAMMA = 0.7

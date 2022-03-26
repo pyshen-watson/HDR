@@ -2,15 +2,15 @@ import numpy as np
 import numpy.linalg as la
 from modules.env import LAMBDA
 
-def debevec_solution(Z, dt):
+def debevec_solution(Z, ln_dt):
 
     n = 255
-    ln_dt = np.log(dt)
     N_IMAGES, N_SAMPLE = Z.shape[:2]
     N_DATA = N_SAMPLE * N_IMAGES
 
-    A = np.zeros((N_DATA+n, N_SAMPLE+n+1))
-    b = np.zeros((N_DATA+n))
+    A = np.zeros((N_DATA+n, N_SAMPLE+n+1), dtype=np.float32)
+    b = np.zeros((N_DATA+n), dtype=np.float32)
+
     w = lambda z: z if z <= n/2 else n-z
     int_Z = lambda i,j : int(Z[j, i].item())
 

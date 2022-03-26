@@ -9,7 +9,7 @@ from modules.renderer import render_radiance
 from modules.utils import download, reorder
 from modules.plot import draw_g, draw_radiance
 from modules.responseCurveSolver import debevec_solution
-from modules.toneMapping import SelfWriteToneMapping
+from modules.toneMapping import SelfWriteToneMapping, EasyToneMapping
 
 """
 HDRImageAlbum: 
@@ -34,45 +34,40 @@ class HDRAlbum:
 
     def load_images(self):
         filenames = os.listdir(self.path[0])
-        filenames.sort(reverse=True) # From the longest exposure time to the shortest
         jpg_path = [f'{self.path[0]}/{filename}' for filename in filenames if 'JPG' in filename]
         self.images = [HDRImage(jpg) for jpg in jpg_path]
+        self.images.sort(key=lambda x: x.shutter, reverse=True)
 
     def align_images(self):
+
+        # Load cache if it exists
         if os.path.isdir(self.path[1]):
             return
-        else:
-            print(f'Align the images at {self.path[1]}:')
-            os.makedirs(self.path[1])
 
-            std = self.images[len(self.images)//2]
-            # cv2.imwrite(std.path[1] ,std.img)
-
-            for img in tqdm(self.images):
-                img.align_to(std.get_MTB(), std.get_mask())
-
-            print(f'The alignment is done.')
+        print(f'Align the images at {self.path[1]}:')
+        os.makedirs(self.path[1])
+        std = self.images[0]
+        for img in tqdm(self.images):
+            img.align_to(std.get_MTB(), std.get_mask())
 
     def solve_response_curve(self):
 
+        # Load cache if it exists
         if os.path.isdir(self.path[2]):
             print(f'Loading the response curve...')
             self.resCurve = np.load(f'{self.path[2]}/model.npy')
             return
 
+
+        self.Z = np.zeros((3, len(self.images), SAMPLE_HEIGHT * SAMPLE_WIDTH))
         for img in self.images:
             img.sampling()
-
-        N_channel = 3
-        N_sample = SAMPLE_HEIGHT * SAMPLE_WIDTH
-        N_image = len(self.images)
-        self.Z = np.zeros((N_channel, N_image, N_sample))
 
         for channel in range(3):
             self.Z[channel] = np.array([img.Z[:,channel] for img in self.images])
         
-        dt = np.array([img.shutter for img in self.images])
-        self.resCurve = np.array([debevec_solution(self.Z[c], dt) for c in range(3)], dtype=np.float64)
+        ln_dt = np.log(np.array([img.shutter for img in self.images]), dtype=np.float32)
+        self.resCurve = np.array([debevec_solution(self.Z[c], ln_dt) for c in range(3)], dtype=np.float32)
 
         os.makedirs(self.path[2])
         np.save(f'{self.path[2]}/model', self.resCurve)
@@ -81,6 +76,7 @@ class HDRAlbum:
 
     def get_radiances(self):
 
+        # Load cache if it exists
         if os.path.isdir(self.path[3]):
             print(f'Loading the HDR image...')
             self.hdr = cv2.imread(f'{self.path[3]}/{ALBUM_NAMES[self.id]}.hdr', flags=cv2.IMREAD_ANYDEPTH)
@@ -98,7 +94,7 @@ class HDRAlbum:
         )
         os.makedirs(self.path[3])
         draw_radiance(ALBUM_NAMES[self.id], self.path[3], ln_radiances)                
-      
+
         self.hdr = reorder(ln_radiances)
         cv2.imwrite(f'{self.path[3]}/{ALBUM_NAMES[self.id]}.hdr', self.hdr)
         print(f'Save {self.path[3]}/{ALBUM_NAMES[self.id]}.hdr')
@@ -110,15 +106,16 @@ class HDRAlbum:
         Drago = cv2.createTonemapDrago(DRAGO_GAMMA, DRAGO_SATURATION)
         Reinhard = cv2.createTonemapReinhard(REINHARD_GAMMA, REINHARD_INTENSITY, REINHARD_LIGHT_ADAPT, REINHARD_COLOR_ADAPT)
         Mantiuk = cv2.createTonemapMantiuk(MANTIUK_GAMMA, MANTIUK_SCALE, MANTIUK_SATURATION)
+        EasySelfWrite = EasyToneMapping(SELF_MU)
         SelfWrite = SelfWriteToneMapping(SELF_ALPHA, SELF_GAMMA)
 
-        TM_func = [Drago, Reinhard, Mantiuk, SelfWrite]
-        TM_name = ['Drago', 'Reinhard', 'Mantiuk', 'Self-write']
-
-        for func, name in zip(TM_func, TM_name):
-            ldr = func.process(self.hdr) * 3
+        TM_func = [Drago, Reinhard, Mantiuk, EasySelfWrite, SelfWrite]
+        TM_name = ['Drago', 'Reinhard', 'Mantiuk', 'Easy', 'Self-write']
+        TM_ex = [1.7, 3.5, 1.7, 0.3, 0.7]
+ 
+        for func, name, ex in zip(TM_func, TM_name, TM_ex):
+            ldr = func.process(self.hdr) * ex
             filename = f"{self.path[4]}/{name}.jpg"
             cv2.imwrite(filename, ldr * 255)
             print(f"Save {filename}")
-       
-       
+        

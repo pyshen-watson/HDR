@@ -1,12 +1,22 @@
-import os
-import gdown
-import piexif
-import cv2
+import os, cv2, gdown
 import numpy as np
-from PIL import Image
 from zipfile import ZipFile
 from numba import njit
 from modules.env import ALBUM_LINKS, ALBUM_NAMES, ALBUM_TYPES
+
+def selection(statement, N_options, default_value):
+    ret = input(statement)
+
+    # input is integer
+    try:
+        ret = int(ret)
+        if ret < 0 or ret >= N_options:
+            return default_value
+        return ret
+
+    # Invalid input
+    except:
+        return default_value
 
 def download(album_id):
 
@@ -25,31 +35,6 @@ def download(album_id):
         zip_ref.extractall(f'{album_path}/{ALBUM_TYPES[0]}')
 
     os.remove(zip_path)
-
-def selection(statement, N_options, default_value):
-    ret = input(statement)
-
-    # input is integer
-    try:
-        ret = int(ret)
-        if ret < 0 or ret >= N_options:
-            print(f'Using default value: {default_value}')
-            return default_value
-            
-        return ret
-
-    # Invalid input
-    except:
-        print(f'Using default value: {default_value}')
-        return default_value
-
-def getExif(img_path):
-    img = Image.open(img_path)
-    exif = piexif.load(img.info["exif"])["Exif"]
-    exposureTime = exif[33434][0] / exif[33434][1]  # Shutter Speed Value
-    filmSpeed = exif[34855]                         # ISO Value
-    aperture = exif[37378][0] / exif[37378][1]      # Aperture Value
-    return [exposureTime, filmSpeed, aperture]
 
 def translate(img, x:int, y:int):
     M = np.array([[1, 0, x],[0, 1, y]], np.float32)
@@ -70,5 +55,5 @@ def reorder(ln_E):
 Reference: 
 [1] https://stackoverflow.com/questions/38511444/python-download-files-from-google-drive-using-url
 [2] https://stackoverflow.com/questions/3451111/unzipping-files-in-python
-[3] https://stackoverflow.com/questions/4764932/in-python-how-do-i-read-the-exif-data-for-an-image
+[3] https://numba.pydata.org/numba-doc/latest/user/performance-tips.html
 """
