@@ -26,9 +26,11 @@ class HDRImage:
 
     def __init__(self, jpg_path):
         self.path = [jpg_path.replace(ALBUM_TYPES[0], album_type) for album_type in ALBUM_TYPES]
-        self.shutter = 1 / int(self.path[0].split('.')[2])
         self.isAligned = os.path.isfile(self.path[1])
         self.img = cv2.imread(self.path[1] if self.isAligned else self.path[0])
+
+        shutter1, shutter2 = self.path[0].split('/')[-1].split('.')[:2]
+        self.shutter = int(shutter1) / int(shutter2)
     
     def get_gray_and_median(self):
         img_gray = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
@@ -53,3 +55,4 @@ class HDRImage:
     def sampling(self):
         downScale = cv2.resize(self.img, (SAMPLE_HEIGHT, SAMPLE_WIDTH), interpolation=cv2.INTER_AREA)
         self.Z = np.reshape(downScale, (SAMPLE_HEIGHT*SAMPLE_WIDTH, 3))
+        return self.Z
