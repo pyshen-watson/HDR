@@ -53,11 +53,11 @@ class HDRAlbum:
 
     def solve_response_curve(self):
 
-        # # Load cache if it exists
-        # if os.path.isdir(self.path[2]):
-        #     print(f'Loading the response curve...')
-        #     self.resCurve = np.load(f'{self.path[2]}/model.npy')
-        #     return
+        # Load cache if it exists
+        if os.path.isdir(self.path[2]):
+            print(f'Loading the response curve...')
+            self.resCurve = np.load(f'{self.path[2]}/model.npy')
+            return
 
         print('Solving the response curve...')
 
