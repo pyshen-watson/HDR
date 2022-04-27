@@ -1,13 +1,13 @@
 ALBUM_LINKS = [
     '18n_mXh92saQuPG921cDoAlI1emupFTdf',
     '1otaUpf7respz-yKQdoX-aOfA30VEWzsH',
-    '1h1ZIr_mHOwcy8OxvqjSN1o7DEcA6pIBB',
+    '1mLuA47620ktrZbVXz4i-6it8XTs5LcMU',
 ]
 
 ALBUM_NAMES = [
     'Bear',
     'Library',
-    'Lawn',
+    'Trail',
 ]
 
 ALBUM_TYPES = [
@@ -44,5 +44,5 @@ SELF_ALPHA = 0.5
 ALBUM_TUNE = [
     [1, 1, 1, 1, 1],
     [2, 2, 6, 1, 1],
-    [2, 4, 3, 0.1, 1],
+    [2, 6, 3, 0.2, 1.5],
 ]

@@ -69,7 +69,7 @@ class HDRAlbum:
         ln_dt = np.log(np.array([img.shutter for img in self.images]), dtype=np.float32)
         self.resCurve = np.array([debevec_solution(self.Z[c], ln_dt) for c in range(3)], dtype=np.float32)
 
-        # os.makedirs(self.path[2])
+        os.makedirs(self.path[2])
         np.save(f'{self.path[2]}/model', self.resCurve)
         print(f'Save {self.path[2]}/model.npy')
         draw_g(ALBUM_NAMES[self.id], self.path[2], self.resCurve)
